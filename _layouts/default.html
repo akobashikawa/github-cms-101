@@ -3,7 +3,7 @@
 
   {%- include head.html -%}
 
-  <body>AAA
+  <body>
 
     {%- include header.html -%}
 
@@ -12,6 +12,14 @@
         {{ content }}
       </div>
     </main>
+
+    <section id="editorSection">
+      <h2>Editor</h2>
+      <textarea id="editorContent">{{ content }}</textarea>
+      <button id="saveButton">Save</button>
+    </section>
+
+    <script src="editor.js"></script>
 
     {%- include footer.html -%}
 
