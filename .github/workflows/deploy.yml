@@ -10,11 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Deploy to GitHub Pages
-        uses:   
- JamesIves/github-pages-deploy-action@v4   
-
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: public # Ajusta esto al directorio donde están tus archivos estáticos
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit_message: Deploy static site
