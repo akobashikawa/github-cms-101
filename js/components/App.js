@@ -1,7 +1,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
-import { marked } from 'marked';
+import { marked } from '../marked-config.js';  // Cambiamos el import
 import config from '../config.js';
 
 const App = {
@@ -43,7 +43,7 @@ const App = {
             currentPage.value = pageName || 'index';
             try {
                 const response = await axios.get(`${config.pagesBaseUrl}/${currentPage.value}.md`);
-                content.value = marked(response.data);
+                content.value = marked(response.data);  // Usa marked con la configuración personalizada
                 showCreateForm.value = false;
             } catch (error) {
                 if (error.response && error.response.status === 404) {
