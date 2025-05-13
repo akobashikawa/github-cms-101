@@ -8,7 +8,7 @@ const App = {
     template: `
     <div class="container">
         <nav>
-            <router-link to="/">Home</router-link> |
+            <router-link to="/">Home</router-link> &nbsp;|&nbsp;
             <router-link to="/about">About</router-link>
             <span v-if="!config.github.token">
                 | <a href="#" @click.prevent="setupToken">Setup Token</a>
