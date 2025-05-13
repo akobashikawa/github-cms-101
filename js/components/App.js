@@ -1,5 +1,6 @@
-import { ref, useTemplateRef, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { marked } from 'marked'; // Changed this line to use named import
 import config from '../config.js';
 
 const App = {
@@ -8,8 +9,6 @@ const App = {
 
     template: `
     <div class="container">
-        <h1>GitHub CMS</h1>
-
         <div v-html="content"></div>
 
         <footer>
@@ -24,7 +23,7 @@ const App = {
         onMounted(async () => {
             try {
                 const response = await axios.get(`${config.pagesBaseUrl}/index.md`);
-                content.value = response.data;
+                content.value = marked(response.data); // Parse markdown to HTML
             } catch (error) {
                 console.error('Error loading content:', error);
                 content.value = 'Error loading content';
