@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="https://matcha.mizu.sh/matcha.css">
 </head>
 <body>
-    <h1>GitHub CMS</h1>
+    <div id="app"></div>
+    
+    <script type="importmap">
+        { "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+          "axios": "https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/esm/axios.min.js"
+        } }
+    </script>
+    <script src="./js/main.js" type="module"></script>
 </body>
 </html>
