@@ -1,4 +1,5 @@
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { marked } from 'marked';
 import config from '../config.js';
@@ -7,8 +8,8 @@ const App = {
     template: `
     <div class="container">
         <nav>
-            <a href="#" @click.prevent="loadPage('index')">Home</a> |
-            <a href="#" @click.prevent="loadPage('about')">About</a>
+            <router-link to="/">Home</router-link> |
+            <router-link to="/about">About</router-link>
             <span v-if="!config.github.token">
                 | <a href="#" @click.prevent="setupToken">Setup Token</a>
             </span>
@@ -32,84 +33,63 @@ const App = {
     `,
 
     setup() {
+        const route = useRoute();
         const content = ref('');
         const showCreateForm = ref(false);
         const newContent = ref('');
         const currentPage = ref('');
         
-        const loadPage = async (page) => {
-            currentPage.value = page;
+        const loadPage = async (pageName) => {
+            currentPage.value = pageName || 'index';
             try {
-                const response = await axios.get(`${config.pagesBaseUrl}/${page}.md`);
+                const response = await axios.get(`${config.pagesBaseUrl}/${currentPage.value}.md`);
                 content.value = marked(response.data);
                 showCreateForm.value = false;
             } catch (error) {
-                console.error('Error loading content:', error);
                 if (error.response && error.response.status === 404) {
                     showCreateForm.value = true;
                     newContent.value = '';
                 } else {
+                    console.error('Error loading content:', error);
                     content.value = 'Error loading content';
                 }
             }
         };
 
+        watch(
+            () => route.params.page,
+            (newPage) => {
+                loadPage(newPage);
+            },
+            { immediate: true }
+        );
+
         const saveContent = async () => {
             try {
-                // 1. Crear una nueva rama
-                const branchName = `page-${currentPage.value}-${Date.now()}`;
-                const mainBranchRef = await axios.get(
-                    `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/git/refs/heads/${config.github.branch}`,
-                    {
-                        headers: { 'Authorization': `token ${config.github.token}` }
-                    }
-                );
-
-                await axios.post(
-                    `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/git/refs`,
-                    {
-                        ref: `refs/heads/${branchName}`,
-                        sha: mainBranchRef.data.object.sha
-                    },
-                    {
-                        headers: { 'Authorization': `token ${config.github.token}` }
-                    }
-                );
-
-                // 2. Crear/actualizar el archivo en la nueva rama
-                const base64Content = btoa(unescape(encodeURIComponent(newContent.value))); // Changed variable name
+                const base64Content = btoa(unescape(encodeURIComponent(newContent.value)));
+                
+                // Commit directo a la rama principal
                 await axios.put(
                     `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/contents/pages/${currentPage.value}.md`,
                     {
                         message: `Add/Update ${currentPage.value}.md`,
                         content: base64Content,
-                        branch: branchName
+                        branch: config.github.branch
                     },
                     {
-                        headers: { 'Authorization': `token ${config.github.token}` }
+                        headers: { 
+                            'Authorization': `token ${config.github.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
                     }
                 );
 
-                // 3. Crear el Pull Request
-                const pr = await axios.post(
-                    `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/pulls`,
-                    {
-                        title: `Add/Update page: ${currentPage.value}`,
-                        body: 'Created via CMS',
-                        head: branchName,
-                        base: config.github.branch
-                    },
-                    {
-                        headers: { 'Authorization': `token ${config.github.token}` }
-                    }
-                );
-
-                showCreateForm.value = false;
                 content.value = marked(newContent.value);
-                alert(`Pull Request created: ${pr.data.html_url}`);
+                showCreateForm.value = false;
+                
             } catch (error) {
-                console.error('Error creating PR:', error);
-                alert('Error creating Pull Request');
+                console.error('Error saving content:', error);
+                alert('Error saving content');
             }
         };
 
@@ -135,11 +115,10 @@ const App = {
             showCreateForm,
             newContent,
             currentPage,
-            loadPage,
-            saveContent,
-            cancelCreate,
             config,
-            setupToken
+            setupToken,
+            saveContent,
+            cancelCreate
         }
     },
 };
