@@ -48,7 +48,6 @@ const App = {
         const loadPage = async (pageName) => {
             currentPage.value = pageName || 'index';
             try {
-                // Usar la API de GitHub en lugar de raw.githubusercontent.com
                 const response = await axios.get(
                     `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/contents/pages/${currentPage.value}.md`,
                     {
@@ -59,8 +58,8 @@ const App = {
                     }
                 );
                 
-                // Decodificar el contenido base64 que viene de la API
-                const decodedContent = atob(response.data.content);
+                // Decodificar correctamente el contenido base64
+                const decodedContent = decodeURIComponent(escape(atob(response.data.content)));
                 rawContent.value = decodedContent;
                 content.value = marked(decodedContent);
                 showEditForm.value = false;
