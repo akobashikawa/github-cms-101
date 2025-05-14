@@ -48,9 +48,21 @@ const App = {
         const loadPage = async (pageName) => {
             currentPage.value = pageName || 'index';
             try {
-                const response = await axios.get(`${config.pagesBaseUrl}/${currentPage.value}.md`);
-                rawContent.value = response.data; // Guardamos el contenido sin procesar
-                content.value = marked(response.data);  // Usa marked con la configuración personalizada
+                // Usar la API de GitHub en lugar de raw.githubusercontent.com
+                const response = await axios.get(
+                    `https://api.github.com/repos/${config.github.owner}/${config.github.repo}/contents/pages/${currentPage.value}.md`,
+                    {
+                        headers: { 
+                            'Authorization': `token ${config.github.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                // Decodificar el contenido base64 que viene de la API
+                const decodedContent = atob(response.data.content);
+                rawContent.value = decodedContent;
+                content.value = marked(decodedContent);
                 showEditForm.value = false;
             } catch (error) {
                 if (error.response && error.response.status === 404) {
