@@ -1,5 +1,5 @@
 # GitHub CMS 101
 
-Este es un CMS simple que usa la infraestructura de GitHub para el despliegue y la publicación.
+A simple CMS (Content Management System) that uses GitHub's infrastructure for deployment and publishing.
 
-[Acerca de](about.md)
+[About](about.md)
